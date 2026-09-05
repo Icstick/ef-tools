@@ -20,7 +20,7 @@
  },
  "梨诺": {
   "name": "梨诺",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -30,7 +30,7 @@
  },
  "诀": {
   "name": "诀",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -40,7 +40,7 @@
  },
  "卡缪": {
   "name": "卡缪",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -50,7 +50,7 @@
  },
  "弭弗": {
   "name": "弭弗",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -60,7 +60,7 @@
  },
  "庄方宜": {
   "name": "庄方宜",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -70,7 +70,7 @@
  },
  "洛茜": {
   "name": "洛茜",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -80,7 +80,7 @@
  },
  "汤汤": {
   "name": "汤汤",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -90,7 +90,7 @@
  },
  "伊冯": {
   "name": "伊冯",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -100,7 +100,7 @@
  },
  "洁尔佩塔": {
   "name": "洁尔佩塔",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -110,7 +110,7 @@
  },
  "莱万汀": {
   "name": "莱万汀",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -138,7 +138,7 @@
  },
  "骏卫": {
   "name": "骏卫",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -148,7 +148,7 @@
  },
  "余烬": {
   "name": "余烬",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -158,7 +158,7 @@
  },
  "别礼": {
   "name": "别礼",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -168,7 +168,7 @@
  },
  "黎风": {
   "name": "黎风",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -178,7 +178,7 @@
  },
  "艾尔黛拉": {
   "name": "艾尔黛拉",
-  "star": null,
+  "star": 6,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -188,7 +188,7 @@
  },
  "佩丽卡": {
   "name": "佩丽卡",
-  "star": null,
+  "star": 5,
   "prof": "术师",
   "sub": "电磁",
   "weapon": null,
@@ -199,7 +199,7 @@
  },
  "陈千语": {
   "name": "陈千语",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -209,7 +209,7 @@
  },
  "狼卫": {
   "name": "狼卫",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -219,7 +219,7 @@
  },
  "弧光": {
   "name": "弧光",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -229,7 +229,7 @@
  },
  "赛希": {
   "name": "赛希",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -239,7 +239,7 @@
  },
  "阿列什": {
   "name": "阿列什",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -249,7 +249,7 @@
  },
  "大潘": {
   "name": "大潘",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -259,7 +259,7 @@
  },
  "艾维文娜": {
   "name": "艾维文娜",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -269,7 +269,7 @@
  },
  "昼雪": {
   "name": "昼雪",
-  "star": null,
+  "star": 5,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -279,7 +279,7 @@
  },
  "秋栗": {
   "name": "秋栗",
-  "star": null,
+  "star": 4,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -289,7 +289,7 @@
  },
  "埃特拉": {
   "name": "埃特拉",
-  "star": null,
+  "star": 4,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -299,7 +299,7 @@
  },
  "卡契尔": {
   "name": "卡契尔",
-  "star": null,
+  "star": 4,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -309,7 +309,7 @@
  },
  "萤石": {
   "name": "萤石",
-  "star": null,
+  "star": 4,
   "prof": null,
   "sub": null,
   "weapon": null,
@@ -319,7 +319,7 @@
  },
  "安塔尔": {
   "name": "安塔尔",
-  "star": null,
+  "star": 4,
   "prof": null,
   "sub": null,
   "weapon": null,
