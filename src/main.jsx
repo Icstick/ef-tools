@@ -12,8 +12,10 @@ const TABS = [
 function App() {
   const [tab, setTab] = useState('roster')
   const [ops, setOps] = useState(null)
+  const [lists, setLists] = useState(null)
   useEffect(() => {
     fetch('data/ops.json').then(r => r.json()).then(setOps).catch(() => setOps({ error: true }))
+    fetch('data/lists.json').then(r => r.json()).then(setLists).catch(() => {})
   }, [])
   return (
     <div style={{ padding: 16, maxWidth: 1280, margin: '0 auto' }}>
@@ -33,7 +35,7 @@ function App() {
         </nav>
         {!ops && <div style={{ color: 'var(--muted)' }}>加载干员数据…</div>}
         {ops && ops.error && <div style={{ color: 'var(--warn)' }}>数据加载失败</div>}
-        {ops && !ops.error && <>{tab === 'roster' && <RosterPage ops={ops} />}{tab === 'farm' && <FarmPage />}</>}
+        {ops && !ops.error && lists && <>{tab === 'roster' && <RosterPage ops={ops} lists={lists} />}{tab === 'farm' && <FarmPage />}</>}
       </div>
     </div>
   )
