@@ -29,3 +29,9 @@ nginx /endfield/ alias → apps/ef/releases/<ts> → current 软链（data/index
 - 缺 4 名（噗切娜/提弗洛斯/管理员×2）：新角色未进 yituliu 数据 → 名字首字占位
 - 技能图标：待专项（候选路径 = cos 镜像 skill 精灵图目录，需探 makePacks/makeItems 引用规律或游戏 sprite 目录清单；森空岛词条技能区对老角色有图但懒加载反爬）
 - 职业/武器类型：weapons.json 有 weaponType 词典键但无中文映射 → 待角色词条补采
+
+## UI v2（2026-09-06 深夜）：Codex demo 视觉移植
+- 浅色战术终端风（米白底/明黄/深墨/直角/mono 标签），CSS 层直接复用 demo globals.css（去 tailwind）
+- 布局 = 顶栏（黄黑切角品牌标 + 导航 + 导出导入）→ 左干员档案卡网格（2 列头像大卡 + 黄条名/Lv + 左上星级）→ 右详情（OPERATOR 编号 + 大字名 + 头像 + 三格练度[等级/晋升◆6/潜能◆6 点击] + 战斗技能 tab[10 段分段条点击置级] + 武器与装备 tab[下拉+自定义+]）
+- 数据模型/备份不变；技能 1-10 制保留；冒烟 e2e-v2.mjs 全 PASS；截图 ocr-samples/ef-v2-demo.png
+- 待办：培养计划 tab（目标/队列/消耗 = demo 02 区）、技能图标接入、武器/装备图鉴图（demo 有 equipment.png 参考）

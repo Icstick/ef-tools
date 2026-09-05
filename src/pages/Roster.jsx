@@ -98,17 +98,19 @@ export default function RosterPage({ ops, lists }) {
         {selOp && (
           <>
             <div className="breadcrumb" style={{ fontSize: 12, color: 'var(--sub)', marginBottom: 8 }}>干员档案 &gt; {selOp.name}</div>
-            <div className="identity" style={{ display: 'flex', background: 'var(--paper)', border: '1px solid var(--line)' }}>
-              <div className="identity-grid" style={{ padding: '18px 20px', flex: 1 }}>
-                <div className="dossier-code" style={{ font: '11px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>OPERATOR / {String(Object.keys(ops).indexOf(sel) + 1).padStart(3, '0')}</div>
-                <h1 style={{ fontSize: 34, fontWeight: 900, margin: '2px 0 4px', letterSpacing: 1 }}>{selOp.name}</h1>
-                <div style={{ color: 'var(--sub)', fontSize: 12, marginBottom: 10 }}>{[selOp.prof, selOp.sub, selOp.weapon, selOp.camp].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</div>
-                <div className="stars" style={{ fontSize: 12, letterSpacing: 2, color: 'var(--ink)', marginBottom: 12 }}>{'◆'.repeat(Math.min(selOp.star || 0, 6)) || <span style={{ color: 'var(--sub)' }}>—</span>}</div>
-                <button onClick={() => own(sel, !selOwned)} className="ownership" style={{ background: selOwned ? 'var(--yellow)' : 'transparent', border: '1px solid var(--ink)', padding: '6px 16px', fontWeight: 800, fontSize: 13, color: 'var(--ink)' }}>
-                  {selOwned ? '✓ 已获得' : '标记已获得'}
-                </button>
+            <div className="identity" style={{ display: 'flex', background: 'var(--paper)', border: '1px solid var(--line)', minHeight: 220 }}>
+              <div className="identity-grid" style={{ padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div className="dossier-code" style={{ font: '12px var(--mono)', color: 'var(--sub)', letterSpacing: 2 }}>OPERATOR / {String(Object.keys(ops).indexOf(sel) + 1).padStart(3, '0')}</div>
+                <h1 style={{ fontSize: 42, fontWeight: 900, margin: '4px 0 6px', letterSpacing: 2, lineHeight: 1.1 }}>{selOp.name}</h1>
+                <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 14, letterSpacing: .5 }}>{[selOp.prof, selOp.sub, selOp.weapon, selOp.camp].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</div>
+                <div className="stars" style={{ fontSize: 14, letterSpacing: 3, color: 'var(--ink)', marginBottom: 16 }}>{'◆'.repeat(Math.min(selOp.star || 0, 6)) || <span style={{ color: 'var(--sub)' }}>—</span>}</div>
+                <div style={{ marginTop: 'auto' }}>
+                  <button onClick={() => own(sel, !selOwned)} className="ownership" style={{ background: selOwned ? 'var(--yellow)' : 'transparent', border: '1px solid var(--ink)', padding: '8px 20px', fontWeight: 800, fontSize: 14, color: 'var(--ink)' }}>
+                    {selOwned ? '✓ 已获得' : '标记已获得'}
+                  </button>
+                </div>
               </div>
-              <div className="identity-portrait" style={{ width: 240, background: 'var(--background)', display: 'grid', placeItems: 'center', borderLeft: '1px solid var(--line)' }}>
+              <div className="identity-portrait" style={{ width: 290, flex: '0 0 290px', background: 'var(--background)', display: 'grid', placeItems: 'center', borderLeft: '1px solid var(--line)', minHeight: 220 }}>
                 {selOp.avatar
                   ? <img src={selOp.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : <span style={{ fontSize: 72, fontWeight: 900, color: 'var(--sub)' }}>{selOp.name[0]}</span>}
@@ -119,28 +121,28 @@ export default function RosterPage({ ops, lists }) {
               <div className="level-stat" style={{ padding: '14px 18px', borderRight: '1px solid var(--line)' }}>
                 <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>当前等级 / LIMIT</small>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <input type="number" min={1} max={200} value={d.lv} disabled={!selOwned} onChange={e => set(sel, { lv: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 66, fontSize: 34, fontWeight: 900, color: 'var(--yellow)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
-                  <span style={{ fontSize: 16, color: 'var(--sub)' }}>/</span>
-                  <input type="number" min={1} max={200} value={d.cap} disabled={!selOwned} title="阶段上限" onChange={e => set(sel, { cap: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 52, fontSize: 18, color: 'var(--sub)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
+                  <input type="number" min={1} max={200} value={d.lv} disabled={!selOwned} onChange={e => set(sel, { lv: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 96, fontSize: 48, fontWeight: 900, color: 'var(--yellow)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
+                  <span style={{ fontSize: 20, color: 'var(--sub)' }}>/</span>
+                  <input type="number" min={1} max={200} value={d.cap} disabled={!selOwned} title="阶段上限" onChange={e => set(sel, { cap: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 68, fontSize: 22, color: 'var(--sub)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
                 </div>
               </div>
               <div style={{ padding: '14px 18px', borderRight: '1px solid var(--line)' }}>
                 <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>晋升 / PROMOTION</small>
-                <div style={{ fontSize: 24, fontWeight: 900, margin: '4px 0' }}>{d.promo}<span style={{ fontSize: 13, color: 'var(--sub)' }}> / 6</span></div>
-                <div className="diamonds" style={{ display: 'flex', gap: 5 }}>
+                <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{d.promo}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 6</span></div>
+                <div className="diamonds" style={{ display: 'flex', gap: 6 }}>
                   {[1, 2, 3, 4, 5, 6].map(n => (
                     <span key={n} onClick={() => selOwned && set(sel, { promo: n === d.promo ? n - 1 : n })}
-                      style={{ width: 10, height: 10, transform: 'rotate(45deg)', background: d.promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                      style={{ width: 12, height: 12, transform: 'rotate(45deg)', background: d.promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                   ))}
                 </div>
               </div>
               <div style={{ padding: '14px 18px' }}>
                 <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>潜能 / POTENTIAL</small>
-                <div style={{ fontSize: 24, fontWeight: 900, margin: '4px 0' }}>{d.pot}<span style={{ fontSize: 13, color: 'var(--sub)' }}> / 6</span></div>
-                <div className="diamonds" style={{ display: 'flex', gap: 5 }}>
+                <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{d.pot}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 6</span></div>
+                <div className="diamonds" style={{ display: 'flex', gap: 6 }}>
                   {[1, 2, 3, 4, 5, 6].map(n => (
                     <span key={n} onClick={() => selOwned && set(sel, { pot: n === d.pot ? n - 1 : n })}
-                      style={{ width: 10, height: 10, transform: 'rotate(45deg)', background: d.pot >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                      style={{ width: 12, height: 12, transform: 'rotate(45deg)', background: d.pot >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                   ))}
                 </div>
               </div>
@@ -160,12 +162,12 @@ export default function RosterPage({ ops, lists }) {
                   {[0, 1, 2, 3].map(i => {
                     const lv = (Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0])[i]
                     return (
-                      <div key={i} className="skill-row" style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '9px 4px', borderBottom: '1px solid var(--line)' }}>
-                        <span className="skill-icon" style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 800, flex: '0 0 36px' }}>S{i + 1}</span>
+                      <div key={i} className="skill-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '14px 6px', borderBottom: '1px solid var(--line)' }}>
+                        <span className="skill-icon" style={{ width: 46, height: 46, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flex: '0 0 46px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>S{i + 1}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
-                            <small style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>RANK {lv}</small>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                            <span style={{ fontSize: 16, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
+                            <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14, color: 'var(--ink)' }}>{lv}</b> / MAX 10</span>
                           </div>
                           <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-10）">
                             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
@@ -180,8 +182,12 @@ export default function RosterPage({ ops, lists }) {
                 </div>
               )}
               {detailTab === 'gear' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  <div className="weapon-row" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '10px 6px', border: '1px solid var(--line)', background: 'var(--paper)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
+                    <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>武器 ARMAMENT</span>
+                  </div>
+                  <div className="weapon-row" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '12px 12px', border: '1px solid var(--line)', background: 'var(--paper)', borderBottom: '3px solid var(--yellow)' }}>
                     <strong style={{ fontSize: 14, marginRight: 4 }}>武器</strong>
                     <select value={d.wpn.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('weapon', v); setDeep(sel, ['wpn', 'name'], v) }} style={selS}>
                       <option value="">— 选择武器 —</option>
@@ -199,13 +205,20 @@ export default function RosterPage({ ops, lists }) {
                     </select>
                     <button onClick={() => customOf('matrix', v => setDeep(sel, ['wpn', 'matrix'], v))} style={{ ...selS, cursor: 'pointer' }}>＋</button>
                   </div>
-                  <div className="equipment-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                    <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
+                    <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>防具与配件 EQUIPMENT</span>
+                  </div>
+                  <div className="equipment-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                     {EQ_SLOTS.map(([slot, labName]) => {
                       const eq = eqv(d, slot)
                       return (
-                        <div key={slot} style={{ border: '1px solid var(--line)', background: 'var(--paper)', padding: '8px 10px' }}>
-                          <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>{labName.toUpperCase()} / SLOT</small>
-                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                        <div key={slot} style={{ border: '1px solid var(--line)', background: 'var(--paper)', padding: '10px 12px 12px', borderBottom: '3px solid var(--yellow)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                            <span style={{ width: 26, height: 26, borderRadius: '50%', background: eq.name ? 'var(--ink)' : '#e2e4dc', color: eq.name ? 'var(--yellow)' : 'var(--sub)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 800, flex: '0 0 26px' }}>{eq.name ? eq.name[0] : '·'}</span>
+                            <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>{labName} / SLOT</small>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
                             <select value={eq.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('equip', v); setDeep(sel, ['eq', slot], { ...eq, name: v }) }} style={{ ...selS, flex: 1, minWidth: 90, fontSize: 12 }}>
                               <option value="">—</option>
                               {options('equip', lists.equips).map(w => <option key={w} value={w}>{w}</option>)}
