@@ -59,6 +59,9 @@ export default function RosterPage({ ops }) {
         {list.map(o => {
           const m = my[o.name] || null
           const d = m || blank()
+          const sk = Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0] // 旧数据防御
+          const wpn = d.wpn || { lv: 0, promo: 0, matrix: '' }
+          const eqv = (slot) => (d.eq && d.eq[slot]) || { n: '', lv: 0 }
           return (
             <div key={o.name} style={{ border: '1px solid ' + (m ? 'var(--gold2)' : 'var(--line)'), borderRadius: 10, padding: 10, background: m ? 'var(--gold-dim)' : 'var(--panel2)', width: 300, display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -79,25 +82,25 @@ export default function RosterPage({ ops }) {
               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                 <span style={small}>技能</span>
                 {[0, 1, 2, 3].map(i => (
-                  <span key={i} title={'技能' + (i + 1) + '：点击循环 1-10（0=未练）'} onClick={() => cycleSkill(o.name, i)} style={{ position: 'relative', cursor: 'pointer', width: 24, height: 24, borderRadius: 5, background: 'var(--panel)', border: '1px solid ' + (d.skills[i] ? 'var(--gold)' : 'var(--line)'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--muted)' }}>
+                  <span key={i} title={'技能' + (i + 1) + '：点击循环 1-10（0=未练）'} onClick={() => cycleSkill(o.name, i)} style={{ position: 'relative', cursor: 'pointer', width: 24, height: 24, borderRadius: 5, background: 'var(--panel)', border: '1px solid ' + (sk[i] ? 'var(--gold)' : 'var(--line)'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--muted)' }}>
                     S{i + 1}
-                    {d.skills[i] > 0 && <span style={{ position: 'absolute', right: -6, bottom: -6, background: d.skills[i] >= 10 ? 'var(--gold)' : 'var(--panel)', color: d.skills[i] >= 10 ? '#101216' : 'var(--gold)', fontSize: 10, lineHeight: '13px', padding: '0 4px', borderRadius: 7, fontWeight: 700 }}>{d.skills[i]}</span>}
+                    {sk[i] > 0 && <span style={{ position: 'absolute', right: -6, bottom: -6, background: sk[i] >= 10 ? 'var(--gold)' : 'var(--panel)', color: sk[i] >= 10 ? '#101216' : 'var(--gold)', fontSize: 10, lineHeight: '13px', padding: '0 4px', borderRadius: 7, fontWeight: 700 }}>{sk[i]}</span>}
                   </span>
                 ))}
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: 13 }}>
                 <span style={small}>武器</span>
-                <span style={small}>Lv</span><input type="number" min={0} max={200} value={d.wpn.lv} onChange={e => setDeep(o.name, ['wpn', 'lv'], Math.max(0, Number(e.target.value) || 0))} style={{ ...cell, width: 50 }} />
-                <button onClick={() => setDeep(o.name, ['wpn', 'promo'], ((d.wpn.promo || 0) + 1) % 7)} title="武器突破/精炼" style={{ ...cell, cursor: 'pointer' }}>破{d.wpn.promo}</button>
-                <input list="matrix-sug" value={d.wpn.matrix} onChange={e => setDeep(o.name, ['wpn', 'matrix'], e.target.value)} placeholder="基质" style={{ ...cell, flex: 1, minWidth: 120 }} />
+                <span style={small}>Lv</span><input type="number" min={0} max={200} value={wpn.lv} onChange={e => setDeep(o.name, ['wpn', 'lv'], Math.max(0, Number(e.target.value) || 0))} style={{ ...cell, width: 50 }} />
+                <button onClick={() => setDeep(o.name, ['wpn', 'promo'], ((wpn.promo || 0) + 1) % 7)} title="武器突破/精炼" style={{ ...cell, cursor: 'pointer' }}>破{wpn.promo}</button>
+                <input list="matrix-sug" value={wpn.matrix} onChange={e => setDeep(o.name, ['wpn', 'matrix'], e.target.value)} placeholder="基质" style={{ ...cell, flex: 1, minWidth: 120 }} />
                 <datalist id="matrix-sug">{MATRIX_SUGGEST.map(s => <option key={s} value={s} />)}</datalist>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
                 {Object.entries(EQ_LABEL).map(([slot, lab]) => (
                   <span key={slot} style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     <span style={{ ...small, width: 34 }}>{lab}</span>
-                    <input value={d.eq[slot].n} placeholder="名称" onChange={e => setDeep(o.name, ['eq', slot], { ...d.eq[slot], n: e.target.value })} style={{ ...cell, flex: 1, minWidth: 0, fontSize: 12 }} />
-                    <button onClick={() => cycleEq(o.name, slot)} title="装备强化等级 0-20" style={{ ...cell, cursor: 'pointer', width: 40, padding: '1px 0', fontSize: 12 }}>{d.eq[slot].lv || '-'}</button>
+                    <input value={eqv(slot).n} placeholder="名称" onChange={e => setDeep(o.name, ['eq', slot], { ...d.eq[slot], n: e.target.value })} style={{ ...cell, flex: 1, minWidth: 0, fontSize: 12 }} />
+                    <button onClick={() => cycleEq(o.name, slot)} title="装备强化等级 0-20" style={{ ...cell, cursor: 'pointer', width: 40, padding: '1px 0', fontSize: 12 }}>{eqv(slot).lv || '-'}</button>
                   </span>
                 ))}
               </div>
