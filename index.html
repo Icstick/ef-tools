@@ -6,31 +6,23 @@
   <title>塔卫二战术台账</title>
   <style>
     :root {
-      color-scheme: dark;
-      --bg0: #101216;
-      --bg1: #15181d;
-      --panel: #1b1f26;
-      --panel2: #20252d;
-      --line: #2a303a;
-      --line2: #38404d;
-      --text: #e9e6df;
-      --muted: #9ba0a8;
-      --dim: #6d737c;
-      --gold: #c9a15e;
-      --gold2: #8a6d3b;
-      --gold-dim: rgba(201, 161, 94, 0.12);
-      --warn: #d07a52;
-      --ok: #7cc47f;
-      --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      color-scheme: light;
+      --background: #eeefeb;
+      --yellow: #f5d900;
+      --ink: #292c29;
+      --sub: #71766d;
+      --line: #cdd0c7;
+      --paper: #f8f9f5;
+      --mono: 'Bahnschrift', 'Consolas', monospace;
+      --radius: 2px;
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; }
     body {
-      background: radial-gradient(1000px 500px at 75% -10%, rgba(138, 109, 59, 0.1), transparent 60%),
-        linear-gradient(160deg, var(--bg0), var(--bg1) 60%);
-      color: var(--text);
+      background: var(--background);
+      color: var(--ink);
       font-family: 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif;
-      font-size: 15px;
+      font-size: 14px;
     }
     input, select, button, textarea { font-family: inherit; }
   </style>

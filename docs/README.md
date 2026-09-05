@@ -21,3 +21,11 @@ ops.json：图鉴基线（森空岛官方 Wiki 采集，34 名；星级/职业�
 
 ## 部署
 nginx /endfield/ alias → apps/ef/releases/<ts> → current 软链（data/index 无缓存）；deploy/deploy-ef.sh
+
+
+## 图鉴数据进度（2026-09-06）
+- 头像 29/33：一图流 cos 镜像 charicon（icon_chr_*.webp，本地存档 public/data/avatars/）
+- 星级 29/33：giftDatabase.json rarity（6★×15/5★×9/4★×5，测试期数据）
+- 缺 4 名（噗切娜/提弗洛斯/管理员×2）：新角色未进 yituliu 数据 → 名字首字占位
+- 技能图标：待专项（候选路径 = cos 镜像 skill 精灵图目录，需探 makePacks/makeItems 引用规律或游戏 sprite 目录清单；森空岛词条技能区对老角色有图但懒加载反爬）
+- 职业/武器类型：weapons.json 有 weaponType 词典键但无中文映射 → 待角色词条补采
