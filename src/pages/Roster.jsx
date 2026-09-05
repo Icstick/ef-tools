@@ -2,22 +2,25 @@ import React, { useMemo, useState } from 'react'
 import { roster, save } from '../lib/store'
 
 const blank = () => ({
-  lv: 1, cap: 40, promo: 0, pot: 0,
+  lv: 1, cap: 90, promo: 0, pot: 0,
   skills: [0, 0, 0, 0],
-  wpn: { name: '', lv: 0, promo: 0, matrix: '' },
+  wpn: { name: '', lv: 0, promo: 0, pot: 0, matrix: { name: '', lv: [0, 0, 0] } },
   eq: { armor: { name: '', lv: 0 }, glove: { name: '', lv: 0 }, acc1: { name: '', lv: 0 }, acc2: { name: '', lv: 0 } },
 })
-const EQ_SLOTS = [['armor', '护甲'], ['glove', '护手'], ['acc1', '配件1'], ['acc2', '配件2']]
+const EQ_SLOTS = [['armor', '护甲'], ['glove', '护手'], ['acc1', '配件·一'], ['acc2', '配件·二']]
 const SKILL_LABEL = ['普通攻击', '战技', '连携技', '终结技']
-const selS = { border: '1px solid var(--line)', background: 'var(--paper)', color: 'var(--ink)', borderRadius: 'var(--radius)', padding: '2px 6px', fontSize: 13 }
+const selS = { border: '1px solid var(--line)', background: 'var(--paper)', color: 'var(--ink)', borderRadius: 'var(--radius)', padding: '2px 6px', fontSize: 12 }
 const inpS = { ...selS, minWidth: 0 }
+// 基质：兼容旧数据（字符串名）与结构化 { name, lv:[0,0,0] }
+const normM = m => (m && typeof m === 'object') ? { name: m.name || '', lv: [0, 1, 2].map(i => Math.max(0, Math.min(6, Number(m.lv && m.lv[i]) || 0))) }
+  : { name: (m || ''), lv: [0, 0, 0] }
 
 export default function RosterPage({ ops, lists }) {
   const [my, setMy] = useState(roster)
   const [q, setQ] = useState('')
   const [ownF, setOwnF] = useState('all')
   const [sel, setSel] = useState(null)
-  const [detailTab, setDetailTab] = useState('skills')
+  const [gearSel, setGearSel] = useState('wpn')
   const [wExtra, setWExtra] = useState({})
   const set = (name, patch) => { const m = { ...my, [name]: { ...blank(), ...(my[name] || {}), ...patch } }; setMy(m); save('roster', m) }
   const setDeep = (name, path, val) => {
@@ -31,6 +34,10 @@ export default function RosterPage({ ops, lists }) {
     const sk = Array.isArray(my[name]?.skills) ? [...my[name].skills] : [0, 0, 0, 0]
     sk[idx] = Math.max(0, Math.min(10, lv))
     set(name, { skills: sk })
+  }
+  const setWpn = (name, patch) => {
+    const w0 = blank().wpn, cur = (my[name] && my[name].wpn) || {}
+    set(name, { wpn: { ...w0, ...cur, ...patch } })
   }
   const eqv = (d, slot) => (d.eq && d.eq[slot]) || { name: '', lv: 0 }
   const remember = (kind, v) => { if (!v) return; const k = kind + 's'; const cur = wExtra[k] || []; if (!cur.includes(v)) setWExtra({ ...wExtra, [k]: [...cur, v].slice(-30) }) }
@@ -47,6 +54,10 @@ export default function RosterPage({ ops, lists }) {
   const selOp = sel && ops[sel] ? ops[sel] : null
   const d = selOp && my[sel] ? my[sel] : blank()
   const selOwned = selOp ? !!my[sel] : false
+  const gearIcons = [
+    { id: 'wpn', label: '武器', name: () => (d.wpn && d.wpn.name) || '' },
+    ...EQ_SLOTS.map(([id, lb]) => ({ id, label: lb, name: () => (d.eq && d.eq[id] && d.eq[id].name) || '' })),
+  ]
   return (
     <div className="workspace" style={{ display: 'flex', gap: 18, padding: '22px 36px', alignItems: 'flex-start' }}>
       {/* 左：图鉴档案卡网格 */}
@@ -72,7 +83,7 @@ export default function RosterPage({ ops, lists }) {
             const st = my[o.name] || {}
             const star = o.star || 0
             return (
-              <button key={o.name} onClick={() => { setSel(o.name); if (!owned) { own(o.name, true); setSel(o.name) } }}
+              <button key={o.name} onClick={() => { setSel(o.name); setGearSel('wpn'); if (!owned) { own(o.name, true); setSel(o.name) } }}
                 className={'operator-card' + (sel === o.name ? ' selected' : '')}
                 style={{ textAlign: 'left', padding: 0, border: '2px solid ' + (sel === o.name ? 'var(--yellow)' : 'var(--line)'), background: 'var(--paper)', borderRadius: 'var(--radius)', overflow: 'hidden', cursor: 'pointer' }}>
                 <span className="card-art" style={{ position: 'relative', display: 'block', height: 110, background: 'var(--background)' }}>
@@ -98,141 +109,177 @@ export default function RosterPage({ ops, lists }) {
         {selOp && (
           <>
             <div className="breadcrumb" style={{ fontSize: 12, color: 'var(--sub)', marginBottom: 8 }}>干员档案 &gt; {selOp.name}</div>
-            <div className="identity" style={{ display: 'flex', background: 'var(--paper)', border: '1px solid var(--line)', minHeight: 220 }}>
-              <div className="identity-grid" style={{ padding: '24px 28px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {/* 身份行 */}
+            <div className="identity" style={{ display: 'flex', background: 'var(--paper)', border: '1px solid var(--line)', minHeight: 200 }}>
+              <div className="identity-grid" style={{ padding: '22px 26px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div className="dossier-code" style={{ font: '12px var(--mono)', color: 'var(--sub)', letterSpacing: 2 }}>OPERATOR / {String(Object.keys(ops).indexOf(sel) + 1).padStart(3, '0')}</div>
-                <h1 style={{ fontSize: 42, fontWeight: 900, margin: '4px 0 6px', letterSpacing: 2, lineHeight: 1.1 }}>{selOp.name}</h1>
-                <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 14, letterSpacing: .5 }}>{[selOp.prof, selOp.sub, selOp.weapon, selOp.camp].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</div>
-                <div className="stars" style={{ fontSize: 14, letterSpacing: 3, color: 'var(--ink)', marginBottom: 16 }}>{'◆'.repeat(Math.min(selOp.star || 0, 6)) || <span style={{ color: 'var(--sub)' }}>—</span>}</div>
+                <h1 style={{ fontSize: 40, fontWeight: 900, margin: '4px 0 6px', letterSpacing: 2, lineHeight: 1.1 }}>{selOp.name}</h1>
+                <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 12, letterSpacing: .5 }}>{[selOp.prof, selOp.sub, selOp.weapon, selOp.camp].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</div>
+                <div className="stars" style={{ fontSize: 13, letterSpacing: 3, color: 'var(--ink)' }}>{'◆'.repeat(Math.min(selOp.star || 0, 6)) || <span style={{ color: 'var(--sub)' }}>—</span>}</div>
                 <div style={{ marginTop: 'auto' }}>
-                  <button onClick={() => own(sel, !selOwned)} className="ownership" style={{ background: selOwned ? 'var(--yellow)' : 'transparent', border: '1px solid var(--ink)', padding: '8px 20px', fontWeight: 800, fontSize: 14, color: 'var(--ink)' }}>
+                  <button onClick={() => own(sel, !selOwned)} className="ownership" style={{ background: selOwned ? 'var(--yellow)' : 'transparent', border: '1px solid var(--ink)', padding: '7px 18px', fontWeight: 800, fontSize: 13, color: 'var(--ink)' }}>
                     {selOwned ? '✓ 已获得' : '标记已获得'}
                   </button>
                 </div>
               </div>
-              <div className="identity-portrait" style={{ width: 290, flex: '0 0 290px', background: 'var(--background)', display: 'grid', placeItems: 'center', borderLeft: '1px solid var(--line)', minHeight: 220 }}>
+              <div className="identity-portrait" style={{ width: 264, flex: '0 0 264px', background: 'var(--background)', display: 'grid', placeItems: 'center', borderLeft: '1px solid var(--line)', minHeight: 200 }}>
                 {selOp.avatar
                   ? <img src={selOp.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ fontSize: 72, fontWeight: 900, color: 'var(--sub)' }}>{selOp.name[0]}</span>}
+                  : <span style={{ fontSize: 68, fontWeight: 900, color: 'var(--sub)' }}>{selOp.name[0]}</span>}
               </div>
             </div>
-            {/* 练度三格 */}
-            <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, border: '1px solid var(--line)', borderTop: 0, background: 'var(--paper)' }}>
-              <div className="level-stat" style={{ padding: '14px 18px', borderRight: '1px solid var(--line)' }}>
-                <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>当前等级 / LIMIT</small>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                  <input type="number" min={1} max={200} value={d.lv} disabled={!selOwned} onChange={e => set(sel, { lv: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 96, fontSize: 48, fontWeight: 900, color: 'var(--yellow)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
-                  <span style={{ fontSize: 20, color: 'var(--sub)' }}>/</span>
-                  <input type="number" min={1} max={200} value={d.cap} disabled={!selOwned} title="阶段上限" onChange={e => set(sel, { cap: Math.max(1, Number(e.target.value) || 1) })} style={{ width: 68, fontSize: 22, color: 'var(--sub)', background: 'transparent', border: 0, borderBottom: '1px dashed var(--line)' }} />
+            {/* 练度 + 装备区（等级白字 / 上限90 固定；无晋升；右侧装备图标组） */}
+            <div className="stat-grid" style={{ display: 'flex', border: '1px solid var(--line)', borderTop: 0, background: 'var(--paper)' }}>
+              {/* 等级：深色块 + 白字 */}
+              <div className="level-stat" style={{ width: 230, flex: '0 0 230px', padding: '16px 20px', background: 'var(--ink)', color: 'var(--paper)' }}>
+                <small style={{ font: '10px var(--mono)', color: '#aab0a5', letterSpacing: 2 }}>当前等级 / LEVEL</small>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
+                  <input type="number" min={1} max={90} value={d.lv} disabled={!selOwned}
+                    onChange={e => set(sel, { lv: Math.max(1, Math.min(90, Number(e.target.value) || 1)) })}
+                    style={{ width: 92, fontSize: 52, fontWeight: 900, color: '#ffffff', background: 'transparent', border: 0, borderBottom: '1px dashed #5d625a', padding: 0 }} />
+                  <span style={{ fontSize: 22, color: '#8a8f85' }}>/</span>
+                  <span style={{ fontSize: 24, color: '#8a8f85', fontWeight: 700 }}>90</span>
                 </div>
+                <div style={{ font: '10px var(--mono)', color: '#7c8277', letterSpacing: 1, marginTop: 6 }}>LIMIT 90 · 固定上限</div>
               </div>
-              <div style={{ padding: '14px 18px', borderRight: '1px solid var(--line)' }}>
-                <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>晋升 / PROMOTION</small>
-                <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{d.promo}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 6</span></div>
-                <div className="diamonds" style={{ display: 'flex', gap: 6 }}>
-                  {[1, 2, 3, 4, 5, 6].map(n => (
-                    <span key={n} onClick={() => selOwned && set(sel, { promo: n === d.promo ? n - 1 : n })}
-                      style={{ width: 12, height: 12, transform: 'rotate(45deg)', background: d.promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
-                  ))}
-                </div>
-              </div>
-              <div style={{ padding: '14px 18px' }}>
+              {/* 潜能 */}
+              <div className="pot-stat" style={{ width: 210, flex: '0 0 210px', padding: '16px 20px', borderLeft: '1px solid var(--line)' }}>
                 <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>潜能 / POTENTIAL</small>
                 <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{d.pot}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 6</span></div>
                 <div className="diamonds" style={{ display: 'flex', gap: 6 }}>
                   {[1, 2, 3, 4, 5, 6].map(n => (
                     <span key={n} onClick={() => selOwned && set(sel, { pot: n === d.pot ? n - 1 : n })}
-                      style={{ width: 12, height: 12, transform: 'rotate(45deg)', background: d.pot >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                      style={{ width: 11, height: 11, transform: 'rotate(45deg)', background: d.pot >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                   ))}
                 </div>
               </div>
-            </div>
-            {/* tabs */}
-            <div className="detail-tabs" style={{ marginTop: 14 }}>
-              <div className="detail-tab-list" style={{ display: 'flex', gap: 4, borderBottom: '1px solid var(--ink)', marginBottom: 12 }}>
-                {[['skills', '战斗技能'], ['gear', '武器与装备']].map(([id, lb]) => (
-                  <button key={id} onClick={() => setDetailTab(id)}
-                    style={{ padding: '8px 18px', border: 0, background: 'transparent', cursor: 'pointer', fontWeight: detailTab === id ? 900 : 400, color: detailTab === id ? 'var(--ink)' : 'var(--sub)', borderBottom: detailTab === id ? '3px solid var(--yellow)' : '3px solid transparent' }}>
-                    {lb}
-                  </button>
-                ))}
-              </div>
-              {detailTab === 'skills' && (
-                <div>
-                  {[0, 1, 2, 3].map(i => {
-                    const lv = (Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0])[i]
+              {/* 装备区 */}
+              <div className="gear-panel" style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderLeft: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
+                  <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>装备与基质 / GEAR</span>
+                  <small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>点击图标选择编辑</small>
+                </div>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {gearIcons.map(g => {
+                    const gd = g.id === 'wpn' ? (d.wpn || blank().wpn) : eqv(d, g.id)
+                    const gname = gd.name || ''
+                    const act = selOwned
                     return (
-                      <div key={i} className="skill-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '14px 6px', borderBottom: '1px solid var(--line)' }}>
-                        <span className="skill-icon" style={{ width: 46, height: 46, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 15, fontWeight: 800, flex: '0 0 46px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>S{i + 1}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
-                            <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14, color: 'var(--ink)' }}>{lv}</b> / MAX 10</span>
-                          </div>
-                          <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-10）">
-                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                              <span key={n} onClick={() => selOwned && setSkill(sel, i, lv === n ? n - 1 : n)}
-                                style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
-                            ))}
-                          </div>
-                        </div>
+                      <div key={g.id} className={'gear-slot' + (gearSel === g.id ? ' selected' : '')} data-slot={g.id}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, cursor: act ? 'pointer' : 'default', padding: 5, border: '2px solid ' + (gearSel === g.id ? 'var(--yellow)' : 'transparent'), background: gearSel === g.id ? '#f2f3ec' : 'transparent' }}
+                        onClick={() => act && setGearSel(g.id)}>
+                        <span style={{ width: 44, height: 44, borderRadius: 8, background: gname ? 'var(--ink)' : '#e2e4dc', color: gname ? 'var(--yellow)' : 'var(--sub)', display: 'grid', placeItems: 'center', fontSize: 17, fontWeight: 800, border: '1px solid ' + (gname ? 'var(--ink)' : 'var(--line)'), position: 'relative' }}>
+                          {gname ? gname[0] : (g.id === 'wpn' ? '武' : g.label[0])}
+                          {g.id === 'wpn' && gname && (
+                            <span style={{ position: 'absolute', right: -6, bottom: -6, background: 'var(--yellow)', color: 'var(--ink)', font: '8px var(--mono)', fontWeight: 800, padding: '1px 3px', borderRadius: 2 }}>破{gd.promo || 0}</span>
+                          )}
+                        </span>
+                        <span style={{ fontSize: 10, color: gname ? 'var(--ink)' : 'var(--sub)', maxWidth: 76, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={gname}>{gname || g.label}</span>
+                        <span style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{g.id === 'wpn' ? 'Lv.' + (gd.lv || 0) + ' · 潜' + (gd.pot || 0) : 'Lv.' + (gd.lv || 0)}</span>
                       </div>
                     )
                   })}
                 </div>
-              )}
-              {detailTab === 'gear' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
-                    <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>武器 ARMAMENT</span>
+                {/* 基质三段 0-6 */}
+                {(() => { const m = normM((d.wpn && d.wpn.matrix) ?? ''); return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                    <span style={{ font: '9px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>基质 MATRIX</span>
+                    {m.name && <span style={{ fontSize: 11, fontWeight: 700, maxWidth: 120, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={m.name}>{m.name}</span>}
+                    {[0, 1, 2].map(k => (
+                      <span key={k} onClick={() => selOwned && setWpn(sel, { matrix: { ...normM((d.wpn && d.wpn.matrix) ?? ''), lv: m.lv.map((v, i) => i === k ? ((v + 1) % 7) : v) } })}
+                        title={'基质段 ' + (k + 1) + ' 等级（0-6）'} className="matrix-lv"
+                        style={{ width: 22, height: 22, display: 'inline-grid', placeItems: 'center', font: 'bold 12px var(--mono)', background: m.lv[k] ? 'var(--yellow)' : '#e2e4dc', color: 'var(--ink)', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default' }}>
+                        {m.lv[k]}
+                      </span>
+                    ))}
+                    <span style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>0-6 · 点击提升</span>
+                    {!m.name && selOwned && (
+                      <button onClick={() => customOf('matrix', v => setWpn(sel, { matrix: { ...normM((d.wpn && d.wpn.matrix) ?? ''), name: v } }))} style={{ ...selS, cursor: 'pointer', padding: '2px 8px', fontSize: 11 }}>＋基质</button>
+                    )}
+                    {m.name && (
+                      <select value={m.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('matrix', v); setWpn(sel, { matrix: { name: v, lv: m.lv } }) }} style={{ ...selS, maxWidth: 130 }}>
+                        <option value="">— 基质 —</option>
+                        {options('matrix', lists.matrix).map(w => <option key={w} value={w}>{w}</option>)}
+                      </select>
+                    )}
                   </div>
-                  <div className="weapon-row" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', padding: '12px 12px', border: '1px solid var(--line)', background: 'var(--paper)', borderBottom: '3px solid var(--yellow)' }}>
-                    <strong style={{ fontSize: 14, marginRight: 4 }}>武器</strong>
-                    <select value={d.wpn.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('weapon', v); setDeep(sel, ['wpn', 'name'], v) }} style={selS}>
+                )})()}
+                {/* 选中装备的编辑行（图标下方） */}
+                {gearSel !== 'wpn' && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+                    <span style={{ font: '10px var(--mono)', color: 'var(--sub)' }}>{gearSel === 'wpn' ? '' : (EQ_SLOTS.find(e => e[0] === gearSel) || [])[1]} / SLOT</span>
+                    <select value={eqv(d, gearSel).name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('equip', v); setDeep(sel, ['eq', gearSel], { ...eqv(d, gearSel), name: v }) }} style={{ ...selS, flex: '0 1 220px', minWidth: 90 }}>
+                      <option value="">—</option>
+                      {options('equip', lists.equips).map(w => <option key={w} value={w}>{w}</option>)}
+                    </select>
+                    <button onClick={() => customOf('equip', v => setDeep(sel, ['eq', gearSel], { ...eqv(d, gearSel), name: v }))} style={{ ...selS, cursor: 'pointer', padding: '2px 8px' }}>＋</button>
+                    <span style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>Lv</span>
+                    <button onClick={() => selOwned && setDeep(sel, ['eq', gearSel], { name: eqv(d, gearSel).name, lv: ((eqv(d, gearSel).lv || 0) + 1) % 21 })} title="强化 0-20" style={{ width: 42, ...selS, cursor: selOwned ? 'pointer' : 'default', fontWeight: 800, color: eqv(d, gearSel).lv ? 'var(--ink)' : 'var(--sub)' }}>{eqv(d, gearSel).lv || '·'}</button>
+                  </div>
+                )}
+                {/* 武器编辑行 */}
+                {gearSel === 'wpn' && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
+                    <select value={(d.wpn && d.wpn.name) || ''} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('weapon', v); setWpn(sel, { name: v }) }} style={{ ...selS, flex: '0 1 220px', minWidth: 90 }}>
                       <option value="">— 选择武器 —</option>
                       {options('weapon', lists.weapons).map(w => <option key={w} value={w}>{w}</option>)}
                     </select>
-                    <button onClick={() => customOf('weapon', v => setDeep(sel, ['wpn', 'name'], v))} title="自定义武器" style={{ ...selS, cursor: 'pointer' }}>＋</button>
+                    <button onClick={() => customOf('weapon', v => setWpn(sel, { name: v }))} style={{ ...selS, cursor: 'pointer', padding: '2px 8px' }}>＋</button>
                     <span style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>Lv.</span>
-                    <input type="number" min={0} max={200} value={d.wpn.lv} disabled={!selOwned} onChange={e => setDeep(sel, ['wpn', 'lv'], Math.max(0, Number(e.target.value) || 0))} style={{ ...inpS, width: 52 }} />
-                    <select value={d.wpn.promo} disabled={!selOwned} onChange={e => setDeep(sel, ['wpn', 'promo'], Number(e.target.value))} style={selS}>
+                    <input type="number" min={0} max={200} value={(d.wpn && d.wpn.lv) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { lv: Math.max(0, Math.min(200, Number(e.target.value) || 0)) })} style={{ ...inpS, width: 56 }} />
+                    <select value={(d.wpn && d.wpn.promo) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { promo: Number(e.target.value) })} style={selS}>
                       {[0, 1, 2, 3, 4, 5, 6].map(p => <option key={p} value={p}>破{p}</option>)}
                     </select>
-                    <select value={d.wpn.matrix} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('matrix', v); setDeep(sel, ['wpn', 'matrix'], v) }} style={selS}>
-                      <option value="">基质 —</option>
-                      {options('matrix', lists.matrix).map(w => <option key={w} value={w}>{w}</option>)}
+                    <span style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>潜能</span>
+                    <select value={(d.wpn && d.wpn.pot) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { pot: Number(e.target.value) })} style={selS}>
+                      {[0, 1, 2, 3, 4, 5, 6].map(p => <option key={p} value={p}>{p} / 6</option>)}
                     </select>
-                    <button onClick={() => customOf('matrix', v => setDeep(sel, ['wpn', 'matrix'], v))} style={{ ...selS, cursor: 'pointer' }}>＋</button>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                    <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
-                    <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>防具与配件 EQUIPMENT</span>
-                  </div>
-                  <div className="equipment-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    {EQ_SLOTS.map(([slot, labName]) => {
-                      const eq = eqv(d, slot)
-                      return (
-                        <div key={slot} style={{ border: '1px solid var(--line)', background: 'var(--paper)', padding: '10px 12px 12px', borderBottom: '3px solid var(--yellow)' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                            <span style={{ width: 26, height: 26, borderRadius: '50%', background: eq.name ? 'var(--ink)' : '#e2e4dc', color: eq.name ? 'var(--yellow)' : 'var(--sub)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 800, flex: '0 0 26px' }}>{eq.name ? eq.name[0] : '·'}</span>
-                            <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>{labName} / SLOT</small>
-                          </div>
-                          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                            <select value={eq.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('equip', v); setDeep(sel, ['eq', slot], { ...eq, name: v }) }} style={{ ...selS, flex: 1, minWidth: 90, fontSize: 12 }}>
-                              <option value="">—</option>
-                              {options('equip', lists.equips).map(w => <option key={w} value={w}>{w}</option>)}
-                            </select>
-                            <button onClick={() => customOf('equip', v => setDeep(sel, ['eq', slot], { ...eq, name: v }))} style={{ ...selS, cursor: 'pointer', padding: '2px 7px' }}>＋</button>
-                            <span style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>Lv</span>
-                            <button onClick={() => selOwned && setDeep(sel, ['eq', slot], { name: eq.name, lv: ((eq.lv || 0) + 1) % 21 })} title="强化 0-20" style={{ width: 40, ...selS, cursor: selOwned ? 'pointer' : 'default', fontWeight: 800, color: eq.lv ? 'var(--ink)' : 'var(--sub)' }}>{eq.lv || '·'}</button>
-                          </div>
+                )}
+              </div>
+            </div>
+            {/* 下半：精英化长条 + 天赋技能栏 */}
+            <div className="elite-track" style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, border: '1px solid var(--line)', background: 'var(--paper)', padding: '10px 16px' }}>
+              <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>精英化 ELITE</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--ink)' }}>{d.promo}<span style={{ fontSize: 12, color: 'var(--sub)' }}> / 6</span></span>
+              <div style={{ flex: 1, display: 'flex', gap: 4 }}>
+                {[1, 2, 3, 4, 5, 6].map(n => (
+                  <span key={n} onClick={() => selOwned && set(sel, { promo: n === d.promo ? n - 1 : n })}
+                    title={'精英化段 ' + n}
+                    className={'elite-seg' + (d.promo >= n ? ' on' : '')}
+                    style={{ flex: 1, height: 14, background: d.promo >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (d.promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                ))}
+              </div>
+              <small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>点击段位设定</small>
+            </div>
+            {/* 天赋技能栏 */}
+            <div className="skill-panel" style={{ marginTop: 10, border: '1px solid var(--line)', background: 'var(--paper)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 8px', borderBottom: '1px solid var(--line)' }}>
+                <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
+                <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>天赋技能 TALENT SKILLS</span>
+              </div>
+              <div style={{ padding: '0 16px' }}>
+                {[0, 1, 2, 3].map(i => {
+                  const lv = (Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0])[i]
+                  return (
+                    <div key={i} className="skill-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '13px 0', borderBottom: i < 3 ? '1px solid var(--line)' : 0 }}>
+                      <span className="skill-icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flex: '0 0 44px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>S{i + 1}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                          <span style={{ fontSize: 15, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
+                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / MAX 10</span>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+                        <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-10）">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                            <span key={n} onClick={() => selOwned && setSkill(sel, i, lv === n ? n - 1 : n)}
+                              style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </>
         )}
