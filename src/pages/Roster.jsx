@@ -19,7 +19,13 @@ export default function RosterPage({ ops }) {
   const [q, setQ] = useState('')
   const [ownF, setOwnF] = useState('all')
   const set = (name, patch) => { const m = { ...my, [name]: { ...blank(), ...(my[name] || {}), ...patch } }; setMy(m); save('roster', m) }
-  const setDeep = (name, path, val) => set(name, path.length === 1 ? { [path[0]]: val } : { [path[0]]: { ...(my[name]?.[path[0]] || {}), [path[1]]: val } })
+  // 深路径写入：以默认值+现有值合并（防未建档/部分建档丢字段，如 eq 的其它槽位）
+  const setDeep = (name, path, val) => {
+    if (path.length === 1) return set(name, { [path[0]]: val })
+    const base = blank()[path[0]]
+    const cur = (my[name] && my[name][path[0]]) || {}
+    set(name, { [path[0]]: { ...base, ...cur, [path[1]]: val } })
+  }
   const own = (name, val) => { const m = { ...my }; if (val) m[name] = my[name] || blank(); else delete m[name]; setMy(m); save('roster', m) }
   const cycle = (name, key, max) => { const cur = my[name]?.[key] || 0; set(name, { [key]: (cur + 1) % (max + 1) }) }
   const cycleSkill = (name, idx) => {
