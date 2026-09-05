@@ -67,7 +67,7 @@ function App() {
           <label className="import-button"><span>⇧ 导入</span><input type="file" accept=".json,application/json" onChange={doImport} /></label>
         </div>
       </header>
-      <div className="workspace">
+      <div className="page-body">
         {!ops && <div style={{ padding: 40, color: 'var(--sub)' }}>加载干员数据…</div>}
         {ops && ops.error && <div style={{ padding: 40, color: '#a33' }}>数据加载失败</div>}
         {ops && !ops.error && lists && <>{tab === 'roster' && <RosterPage ops={ops} lists={lists} />}{tab === 'farm' && <FarmPage ops={ops} />}</>}
