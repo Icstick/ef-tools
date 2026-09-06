@@ -107,7 +107,15 @@ export default function RosterPage({ ops, lists }) {
     return ''
   }
   const poolOf = (slot, seed) => {
-    const fromGear = slot === 'wpn' ? (gear ? gear.weapons.map(w => w.name) : []) : slot === 'matrix' ? (gear ? gear.matrix.map(m => m.name) : []) : (gear ? ((gear.slots[slot] || []).map(x => x.name)) : [])
+    let fromGear = []
+    if (gear) {
+      if (slot === 'wpn') {
+        // 按角色武器类型过滤（ops.weapon = 武器类型中文）
+        const wt = selOp && selOp.weapon
+        fromGear = gear.weapons.filter(w => !wt || !w.type || w.type === wt || !gear.weapons.some(x => x.type === wt)).map(w => w.name)
+      } else if (slot === 'matrix') { fromGear = gear.matrix.map(m => m.name) }
+      else { fromGear = (gear.slots[slot] || []).map(x => x.name) }
+    }
     const extra = wExtra[slot === 'matrix' ? 'matrixs' : slot === 'wpn' ? 'weapons' : 'equips'] || []
     const cur = slot === 'matrix' ? normM((d.wpn && d.wpn.matrix) ?? '').name : slot === 'wpn' ? ((d.wpn && d.wpn.name) || '') : ((d.eq && d.eq[slot] && d.eq[slot].name) || '')
     return [...new Set([...(seed || []), ...fromGear, ...extra, cur])].filter(Boolean)
@@ -268,11 +276,10 @@ export default function RosterPage({ ops, lists }) {
                             const lvNow = (d.wpn && d.wpn.lv) || 0
                             const gate = [20, 40, 60, 80][n - 1]
                             const canUp = lvNow >= gate
-                            const clickable = selOwned && (promo === n ? true : canUp)
                             return (
-                              <span key={n} onClick={() => clickable && setWpn(sel, { promo: promo === n ? n - 1 : Math.min(n, 4) })}
-                                title={(promo >= n ? '突破 ' + n + '（已激活）' : n + ' 阶突破 · 需武器 ' + gate + ' 级' + (canUp && promo < n ? ' · 可突破' : ''))}
-                                style={{ width: 13, height: 13, borderRadius: '50%', background: promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (promo >= n ? 'var(--ink)' : (canUp ? 'var(--ink)' : 'var(--line)')), cursor: clickable ? 'pointer' : 'default', opacity: promo >= n ? 1 : (canUp ? 1 : .45), display: 'inline-block' }} />
+                              <span key={n} onClick={() => selOwned && setWpn(sel, { promo: promo === n ? n - 1 : Math.min(n, 4) })}
+                                title={(promo >= n ? '突破 ' + n + '（已激活）' : n + ' 阶突破 · 游戏规则需武器 ' + gate + ' 级' + (canUp ? '（等级已满足 ✓）' : '') + ' · 点击标记当前突破')}
+                                style={{ width: 13, height: 13, borderRadius: '50%', background: promo >= n ? 'var(--yellow)' : (canUp ? '#f5e6a8' : '#dfe2d9'), border: '2px solid ' + (promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', opacity: selOwned ? 1 : .5, display: 'inline-block' }} />
                             )
                           })}
                         </span>
