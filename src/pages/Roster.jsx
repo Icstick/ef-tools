@@ -53,8 +53,18 @@ export default function RosterPage({ ops, lists }) {
     ms[idx] = total > 9 ? total - 9 : 0
     set(name, { skills: sk, mastery: ms })
   }
-  const T_MAX = [3, 2, 2, 2, 4]
-  const normT = (tl) => { const a = Array.isArray(tl) ? [...tl] : [0, 0, 0, 0, 0]; while (a.length < 5) a.push(0); return a.map((v, i) => Math.max(0, Math.min(T_MAX[i] || 4, Number(v) || 0))) }
+  // 顺序：好感度 / 天赋一 / 天赋二 / 基建一 / 基建二 / 装备适配
+  const T_MAX = [4, 3, 2, 2, 2, 3]
+  const normT = (tl) => {
+    const a = Array.isArray(tl) ? [...tl] : []
+    if (a.length < 6) {
+      // 旧序 [天赋一,天赋二,基建一,基建二,好感度] → 新序迁移
+      const old = a; while (old.length < 5) old.push(0)
+      a[0] = old[4]; a[1] = old[0]; a[2] = old[1]; a[3] = old[2]; a[4] = old[3]; a[5] = 0
+    }
+    while (a.length < 6) a.push(0)
+    return a.map((v, i) => Math.max(0, Math.min(T_MAX[i] || 4, Number(v) || 0)))
+  }
   const setTalent = (name, idx, v) => {
     const tl = normT(my[name]?.talents)
     tl[idx] = Math.max(0, Math.min(T_MAX[idx] || 4, v))
@@ -223,12 +233,7 @@ export default function RosterPage({ ops, lists }) {
               <div className="gear-panel" style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderLeft: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>装备与基质 / GEAR</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 5 }} title={'装备强化上限档：精英化 1/2/3 阶解锁（20/40/60）当前 ' + Math.min((d.promo || 0), 3) + '/3'}>
-                    <small style={{ font: '10px var(--mono)', color: 'var(--sub)' }}>装备上限</small>
-                    {[1, 2, 3].map(n => (
-                      <span key={n} style={{ width: 11, height: 11, borderRadius: '50%', background: (d.promo || 0) >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + ((d.promo || 0) >= n ? 'var(--ink)' : 'var(--line)'), display: 'inline-block' }} />
-                    ))}
-                  </span>
+                  <small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>装备无等级 · 精锻为强化项</small>
                 </div>
                 <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   {/* 武器块：图标 + 右侧 潜能/基质 */}
@@ -408,12 +413,12 @@ export default function RosterPage({ ops, lists }) {
                   const tNames = ((selOp.skills && selOp.skills.talent) || '').split(/[／/，,]/).map(s => s.trim()).filter(Boolean)
                   const tl = normT(d.talents)
                   const defs = [
+                    { name: '好感度', max: 4, sub: '好感度增益' },
                     { name: tNames[0] || '天赋一', max: 3, sub: '天赋一' },
                     { name: tNames[1] || '天赋二', max: 2, sub: '天赋二' },
                     { name: '基建一', max: 2, sub: '基建一' },
                     { name: '基建二', max: 2, sub: '基建二' },
-                    { name: '好感度', max: 4, sub: '好感度增益' },
-                    { name: '装备等级', max: 3, sub: '装备强化上限 · 精英化 1/2/3 阶解锁', readOnly: true },
+                    { name: '装备适配', max: 3, sub: '装备适配 · 穿戴品质档（蓝/紫/金）' },
                   ]
                   return (
                     <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' }}>
