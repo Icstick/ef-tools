@@ -243,9 +243,7 @@ export default function RosterPage({ ops, lists }) {
                       <span style={{ width: 72, height: 72, borderRadius: 12, background: (d.wpn && d.wpn.name) ? '#1d201d' : '#e2e4dc', color: (d.wpn && d.wpn.name) ? 'var(--yellow)' : 'var(--sub)', display: 'grid', placeItems: 'center', fontSize: 28, fontWeight: 800, border: '1px solid var(--ink)', position: 'relative', overflow: 'hidden' }}>
                         <span style={{ zIndex: 0 }}>{(d.wpn && d.wpn.name) ? (d.wpn.name[0]) : '武'}</span>
                         {(d.wpn && d.wpn.name) && iconOf('wpn', d.wpn.name) && <img src={iconOf('wpn', d.wpn.name)} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = 'none' }} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', padding: 4, zIndex: 1 }} />}
-                        {d.wpn && d.wpn.name && (
-                          <span style={{ position: 'absolute', right: -5, bottom: -5, background: 'var(--yellow)', color: 'var(--ink)', font: '10px var(--mono)', fontWeight: 800, padding: '1px 5px', borderRadius: 2 }}>破{d.wpn.promo || 0}</span>
-                        )}
+
                       </span>
                       <span style={{ fontSize: 10, color: 'var(--sub)', maxWidth: 80, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>武器</span>
                     </div>
@@ -259,9 +257,17 @@ export default function RosterPage({ ops, lists }) {
                       <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                         <small style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>Lv</small>
                         <input type="number" min={0} max={200} value={(d.wpn && d.wpn.lv) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { lv: Math.max(0, Math.min(200, Number(e.target.value) || 0)) })} style={{ ...inpS, width: 54, fontSize: 12 }} />
-                        <select value={(d.wpn && d.wpn.promo) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { promo: Number(e.target.value) })} style={{ ...selS, fontSize: 12 }}>
-                          {[0, 1, 2, 3, 4, 5, 6].map(p => <option key={p} value={p}>破{p}</option>)}
-                        </select>
+                        {/* 武器突破 5 圆（0-5，随武器等级档解锁） */}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} title={'武器突破 0-5 · 与武器等级同步解锁'}>
+                          <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>破</small>
+                          {[1, 2, 3, 4, 5].map(n => {
+                            const promo = Math.min((d.wpn && d.wpn.promo) || 0, 5)
+                            return (
+                              <span key={n} onClick={() => selOwned && setWpn(sel, { promo: promo === n ? n - 1 : Math.min(n, 5) })}
+                                style={{ width: 13, height: 13, borderRadius: '50%', background: promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                            )
+                          })}
+                        </span>
                       </div>
                       {/* 武器潜能 5 圆 */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} title="武器潜能 0-5">
@@ -272,21 +278,17 @@ export default function RosterPage({ ops, lists }) {
                             style={{ width: 14, height: 14, borderRadius: '50%', background: Math.min((d.wpn && d.wpn.pot) || 0, 5) >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (Math.min((d.wpn && d.wpn.pot) || 0, 5) >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                         ))}
                       </div>
-                      {/* 基质：三段 + 名称 */}
+                      {/* 基质：仅三段等级 */}
                       {(() => { const m = normM((d.wpn && d.wpn.matrix) ?? ''); return (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
                           <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>基质</small>
                           {[0, 1, 2].map(k => (
                             <span key={k} onClick={() => selOwned && setWpn(sel, { matrix: { ...m, lv: m.lv.map((v, i) => i === k ? ((v + 1) % 7) : v) } })}
-                              title={'基质段 ' + (k + 1) + '（0-6）'} className="matrix-lv"
+                              title={'基质段 ' + (k + 1) + ' 等级（0-6）'} className="matrix-lv"
                               style={{ width: 28, height: 28, display: 'inline-grid', placeItems: 'center', font: 'bold 14px var(--mono)', background: m.lv[k] ? 'var(--yellow)' : '#e2e4dc', color: 'var(--ink)', border: '2px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default' }}>
                               {m.lv[k]}
                             </span>
                           ))}
-                          <select value={m.name} disabled={!selOwned} onChange={e => { const v = e.target.value; remember('matrix', v); setWpn(sel, { matrix: { name: v, lv: m.lv } }) }} style={{ ...selS, maxWidth: 108, fontSize: 12 }}>
-                            <option value="">基质 —</option>
-                            {poolOf('matrix', lists.matrix).map(w => <option key={w} value={w}>{w}</option>)}
-                          </select>
                         </div>
                       ) })()}
                     </div>
