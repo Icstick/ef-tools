@@ -149,7 +149,11 @@ export default function RosterPage({ ops, lists }) {
               <div className="identity-grid" style={{ padding: '22px 26px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div className="dossier-code" style={{ font: '12px var(--mono)', color: 'var(--sub)', letterSpacing: 2 }}>OPERATOR / {String(Object.keys(ops).indexOf(sel) + 1).padStart(3, '0')}</div>
                 <h1 style={{ fontSize: 40, fontWeight: 900, margin: '4px 0 6px', letterSpacing: 2, lineHeight: 1.1 }}>{selOp.name}</h1>
-                <div style={{ color: 'var(--sub)', fontSize: 13, marginBottom: 12, letterSpacing: .5 }}>{[selOp.prof, selOp.sub, selOp.weapon, selOp.camp].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+                  <span style={{ color: 'var(--ink)', fontSize: 13, fontWeight: 700 }}>{[selOp.prof, selOp.element, selOp.weapon].filter(Boolean).join(' · ') || '干员档案 / 终末地'}</span>
+                  {selOp.mainAttr && <span style={{ background: 'var(--ink)', color: 'var(--yellow)', font: '10px var(--mono)', padding: '2px 7px', letterSpacing: 1 }}>主 {selOp.mainAttr}</span>}
+                  {selOp.subAttr && <span style={{ border: '1px solid var(--line)', color: 'var(--sub)', font: '10px var(--mono)', padding: '2px 7px' }}>副 {selOp.subAttr}</span>}
+                </div>
                 <div className="stars" style={{ fontSize: 13, letterSpacing: 3, color: 'var(--ink)' }}>{'◆'.repeat(Math.min(selOp.star || 0, 6)) || <span style={{ color: 'var(--sub)' }}>—</span>}</div>
                 <div style={{ marginTop: 'auto' }}>
                   <button onClick={() => own(sel, !selOwned)} className="ownership" style={{ background: selOwned ? 'var(--yellow)' : 'transparent', border: '1px solid var(--ink)', padding: '7px 18px', fontWeight: 800, fontSize: 13, color: 'var(--ink)' }}>
@@ -163,6 +167,19 @@ export default function RosterPage({ ops, lists }) {
                   : <span style={{ fontSize: 68, fontWeight: 900, color: 'var(--sub)' }}>{selOp.name[0]}</span>}
               </div>
             </div>
+            {/* 能力值四维 */}
+            {selOp.stats && (selOp.stats.str != null || selOp.stats.agi != null) && (
+              <div className="stats-strip" title={selOp.stats.statNote || ''} style={{ display: 'flex', border: '1px solid var(--line)', borderTop: 0, background: 'var(--paper)' }}>
+                {[['str', '力量', 'STR'], ['agi', '敏捷', 'AGI'], ['int', '智识', 'INT'], ['wil', '意志', 'WIL']].map(([k, zh, en], idx) => (
+                  <div key={k} style={{ flex: 1, display: 'flex', alignItems: 'baseline', gap: 8, padding: '7px 16px', borderLeft: idx ? '1px solid var(--line)' : 0 }}>
+                    <small style={{ font: '9px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>{zh} {en}</small>
+                    <b style={{ fontSize: 18, color: selOp.mainAttr === zh ? 'var(--yellow)' : 'var(--ink)', textShadow: selOp.mainAttr === zh ? '0 0 0 #000, 0 0 0 #000' : 'none' }}>{Math.round(selOp.stats[k])}</b>
+                    {selOp.mainAttr === zh && <small style={{ font: '9px var(--mono)', color: 'var(--ink)', background: 'var(--yellow)', padding: '0 3px' }}>主</small>}
+                  </div>
+                ))}
+                {selOp.stats.statNote && <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', borderLeft: '1px solid var(--line)' }}><small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{selOp.stats.statNote}</small></div>}
+              </div>
+            )}
             {/* 练度 + 装备区（等级白字 / 上限90 固定；无晋升；右侧装备图标组） */}
             <div className="stat-grid" style={{ display: 'flex', border: '1px solid var(--line)', borderTop: 0, background: 'var(--paper)' }}>
               {/* 等级：深色块 + 白字 */}
@@ -298,12 +315,13 @@ export default function RosterPage({ ops, lists }) {
                 {[0, 1, 2, 3].map(i => {
                   const lv = (Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0])[i]
                   const ms = (Array.isArray(d.mastery) ? d.mastery : [0, 0, 0, 0])[i]
+                  const realName = selOp.skills ? [selOp.skills.normal, selOp.skills.skill, selOp.skills.chain, selOp.skills.ult][i] : null
                   return (
                     <div key={i} className="skill-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--line)' : 0 }}>
                       <span className="skill-icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flex: '0 0 44px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>S{i + 1}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                          <span style={{ fontSize: 15, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
+                          <span style={{ fontSize: 15, fontWeight: 700 }}>{realName || SKILL_LABEL[i]}{realName && <small style={{ fontWeight: 400, color: 'var(--sub)', fontSize: 11, marginLeft: 8 }}>{SKILL_LABEL[i]}</small>}</span>
                           <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>{lv >= 9 ? 'MAX RANK 9' : <>RANK <b style={{ fontSize: 14 }}>{lv}</b> / 9</>}</span>
                         </div>
                         <div className="rank-bar" style={{ display: 'flex', gap: 8 }} title="点击分段设置等级（0-9 · MAX 3/6/9）">
@@ -332,33 +350,37 @@ export default function RosterPage({ ops, lists }) {
                 })}
               </div>
             </div>
-            {/* 天赋技能（基建）面板 */}
+            {/* 天赋（被动）面板 */}
             <div className="talent-panel" style={{ marginTop: 10, border: '1px solid var(--line)', background: 'var(--paper)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 8px', borderBottom: '1px solid var(--line)' }}>
                 <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
-                <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>天赋技能（基建）TALENTS</span>
+                <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>天赋（被动）TALENTS</span>
               </div>
               <div style={{ padding: '0 16px' }}>
-                {[0, 1, 2, 3].map(i => {
-                  const lv = (Array.isArray(d.talents) ? d.talents : [0, 0, 0, 0])[i]
-                  return (
-                    <div key={i} className="talent-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--line)' : 0 }}>
-                      <span className="skill-icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flex: '0 0 44px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>T{i + 1}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                          <span style={{ fontSize: 15, fontWeight: 700 }}>{'基建技能·' + ['一', '二', '三', '四'][i]}</span>
-                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / 9</span>
-                        </div>
-                        <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-9）">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-                            <span key={n} onClick={() => selOwned && setTalent(sel, i, lv === n ? n - 1 : n)}
-                              style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
-                          ))}
+                {(() => {
+                  const tNames = (selOp.skills && selOp.skills.talent || '').split(/[／/，,]/).map(s => s.trim()).filter(Boolean).slice(0, 2)
+                  const rows = tNames.length ? tNames : ['天赋·一', '天赋·二']
+                  return rows.map((nm, i) => {
+                    const lv = (Array.isArray(d.talents) ? d.talents : [0, 0, 0, 0])[i]
+                    return (
+                      <div key={i} className="talent-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '10px 0', borderBottom: i < rows.length - 1 ? '1px solid var(--line)' : 0 }}>
+                        <span className="skill-icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flex: '0 0 44px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>T{i + 1}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                            <span style={{ fontSize: 15, fontWeight: 700 }}>{nm}{!tNames.length && <small style={{ fontWeight: 400, color: 'var(--sub)', fontSize: 11, marginLeft: 8 }}>占位</small>}</span>
+                            <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / 9</span>
+                          </div>
+                          <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-9）">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                              <span key={n} onClick={() => selOwned && setTalent(sel, i, lv === n ? n - 1 : n)}
+                                style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+                })()}
               </div>
             </div>
           </>
