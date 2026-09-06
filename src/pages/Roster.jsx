@@ -256,15 +256,23 @@ export default function RosterPage({ ops, lists }) {
                       </div>
                       <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                         <small style={{ font: '11px var(--mono)', color: 'var(--sub)' }}>Lv</small>
-                        <input type="number" min={0} max={200} value={(d.wpn && d.wpn.lv) || 0} disabled={!selOwned} onChange={e => setWpn(sel, { lv: Math.max(0, Math.min(200, Number(e.target.value) || 0)) })} style={{ ...inpS, width: 54, fontSize: 12 }} />
-                        {/* 武器突破 5 圆（0-5，随武器等级档解锁） */}
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} title={'武器突破 0-5 · 与武器等级同步解锁'}>
+                        <input type="number" min={0} max={90} value={Math.min((d.wpn && d.wpn.lv) || 0, [20, 40, 60, 80, 90][Math.min((d.wpn && d.wpn.promo) || 0, 4)])} disabled={!selOwned}
+                          onChange={e => setWpn(sel, { lv: Math.max(0, Math.min([20, 40, 60, 80, 90][Math.min((d.wpn && d.wpn.promo) || 0, 4)], Number(e.target.value) || 0)) })}
+                          style={{ ...inpS, width: 54, fontSize: 12 }} />
+                        <small style={{ font: '10px var(--mono)', color: 'var(--sub)' }}>/{[20, 40, 60, 80, 90][Math.min((d.wpn && d.wpn.promo) || 0, 4)]}</small>
+                        {/* 武器突破 4 圆（破 0-4 · 门槛 20/40/60/80 级） */}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }} title={'武器突破 0-4 · 到达 20/40/60/80 级解锁下一档'}>
                           <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>破</small>
-                          {[1, 2, 3, 4, 5].map(n => {
-                            const promo = Math.min((d.wpn && d.wpn.promo) || 0, 5)
+                          {[1, 2, 3, 4].map(n => {
+                            const promo = Math.min((d.wpn && d.wpn.promo) || 0, 4)
+                            const lvNow = (d.wpn && d.wpn.lv) || 0
+                            const gate = [20, 40, 60, 80][n - 1]
+                            const canUp = lvNow >= gate
+                            const clickable = selOwned && (promo === n ? true : canUp)
                             return (
-                              <span key={n} onClick={() => selOwned && setWpn(sel, { promo: promo === n ? n - 1 : Math.min(n, 5) })}
-                                style={{ width: 13, height: 13, borderRadius: '50%', background: promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                              <span key={n} onClick={() => clickable && setWpn(sel, { promo: promo === n ? n - 1 : Math.min(n, 4) })}
+                                title={(promo >= n ? '突破 ' + n + '（已激活）' : n + ' 阶突破 · 需武器 ' + gate + ' 级' + (canUp && promo < n ? ' · 可突破' : ''))}
+                                style={{ width: 13, height: 13, borderRadius: '50%', background: promo >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (promo >= n ? 'var(--ink)' : (canUp ? 'var(--ink)' : 'var(--line)')), cursor: clickable ? 'pointer' : 'default', opacity: promo >= n ? 1 : (canUp ? 1 : .45), display: 'inline-block' }} />
                             )
                           })}
                         </span>
