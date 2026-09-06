@@ -206,7 +206,7 @@ export default function RosterPage({ ops, lists }) {
                     {selOp.mainAttr === zh && <small style={{ font: '9px var(--mono)', color: 'var(--ink)', background: 'var(--yellow)', padding: '0 3px' }}>主</small>}
                   </div>
                 ))}
-                {selOp.stats.statNote && <div style={{ display: 'flex', alignItems: 'center', padding: '0 12px', borderLeft: '1px solid var(--line)' }}><small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{selOp.stats.statNote}</small></div>}
+
               </div>
             )}
             {/* 练度区：等级+潜能上下合并 | 右侧装备与基质 */}
@@ -222,7 +222,7 @@ export default function RosterPage({ ops, lists }) {
                     <span style={{ fontSize: 22, color: '#8a8f85' }}>/</span>
                     <span style={{ fontSize: 24, color: '#8a8f85', fontWeight: 700 }}>{[20, 40, 60, 80, 90][Math.min(d.promo || 0, 4)]}</span>
                   </div>
-                  <div style={{ font: '10px var(--mono)', color: (d.promo || 0) >= 4 ? '#9db36a' : '#7c8277', letterSpacing: 1, marginTop: 4 }}>{(d.promo || 0) >= 4 ? 'LIMIT 90 · 已解锁' : ['上限 20', '精英化一 → 40', '精英化二 → 60', '精英化三 → 80'][Math.min(d.promo || 0, 3)]}</div>
+                  <div style={{ font: '10px var(--mono)', color: '#7c8277', letterSpacing: 1, marginTop: 4 }}>LIMIT {[20, 40, 60, 80, 90][Math.min(d.promo || 0, 4)]}</div>
                 </div>
                 <div style={{ borderTop: '1px solid #3a3e37', padding: '10px 20px 12px', display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div>
@@ -241,7 +241,6 @@ export default function RosterPage({ ops, lists }) {
               <div className="gear-panel" style={{ flex: 1, minWidth: 0, padding: '12px 16px', borderLeft: '1px solid var(--line)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>装备与基质 / GEAR</span>
-                  <small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>装备无等级 · 精锻为强化项</small>
                 </div>
                 <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   {/* 武器块：图标 + 右侧 潜能/基质 */}
@@ -352,7 +351,7 @@ export default function RosterPage({ ops, lists }) {
                         <option value="">—</option>
                         {poolOf(gearSel, lists.equips).map(w => <option key={w} value={w}>{w}</option>)}
                       </select>
-                      <small style={{ font: '10px var(--mono)', color: 'var(--sub)' }}>装备无等级 · 精锻直接点击右侧图标旁三段</small>
+
                     </div>
                   )
                 })()}
@@ -370,7 +369,7 @@ export default function RosterPage({ ops, lists }) {
                     style={{ flex: 1, height: 14, background: d.promo >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (d.promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                 ))}
               </div>
-              <small style={{ font: '9px var(--mono)', color: (d.promo || 0) >= 4 ? '#7c925b' : 'var(--sub)', whiteSpace: 'nowrap' }}>{(d.promo || 0) >= 4 ? '✓ 已解锁等级上限 90' : '点击段位 · 4 阶解锁 90'}</small>
+
             </div>
             {/* 天赋技能栏 */}
             <div className="skill-panel" style={{ marginTop: 10, border: '1px solid var(--line)', background: 'var(--paper)' }}>
