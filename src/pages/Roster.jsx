@@ -116,9 +116,9 @@ export default function RosterPage({ ops, lists }) {
       } else if (slot === 'matrix') { fromGear = gear.matrix.map(m => m.name) }
       else { fromGear = (gear.slots[slot] || []).map(x => x.name) }
     }
-    const extra = wExtra[slot === 'matrix' ? 'matrixs' : slot === 'wpn' ? 'weapons' : 'equips'] || []
+    // 池 = 官方过滤数据 + 当前已选值兜底（旧自定义/种子不再混入）
     const cur = slot === 'matrix' ? normM((d.wpn && d.wpn.matrix) ?? '').name : slot === 'wpn' ? ((d.wpn && d.wpn.name) || '') : ((d.eq && d.eq[slot] && d.eq[slot].name) || '')
-    return [...new Set([...(seed || []), ...fromGear, ...extra, cur])].filter(Boolean)
+    return [...new Set([...fromGear, cur])].filter(Boolean)
   }
   const gearIcons = [
     { id: 'wpn', label: '武器', name: () => (d.wpn && d.wpn.name) || '' },
