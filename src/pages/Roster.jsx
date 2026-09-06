@@ -4,6 +4,7 @@ import { roster, save } from '../lib/store'
 const blank = () => ({
   lv: 1, cap: 90, promo: 0, pot: 0,
   skills: [0, 0, 0, 0],
+  mastery: [0, 0, 0, 0],
   talents: [0, 0, 0, 0],
   wpn: { name: '', lv: 0, promo: 0, pot: 0, matrix: { name: '', lv: [0, 0, 0] } },
   eq: { armor: { name: '', lv: 0 }, glove: { name: '', lv: 0 }, acc1: { name: '', lv: 0 }, acc2: { name: '', lv: 0 } },
@@ -33,8 +34,13 @@ export default function RosterPage({ ops, lists }) {
   const own = (name, val) => { const m = { ...my }; if (val) m[name] = my[name] || blank(); else delete m[name]; setMy(m); save('roster', m) }
   const setSkill = (name, idx, lv) => {
     const sk = Array.isArray(my[name]?.skills) ? [...my[name].skills] : [0, 0, 0, 0]
-    sk[idx] = Math.max(0, Math.min(10, lv))
+    sk[idx] = Math.max(0, Math.min(9, lv))
     set(name, { skills: sk })
+  }
+  const setMastery = (name, idx, v) => {
+    const ms = Array.isArray(my[name]?.mastery) ? [...my[name].mastery] : [0, 0, 0, 0]
+    ms[idx] = Math.max(0, Math.min(3, v))
+    set(name, { mastery: ms })
   }
   const setTalent = (name, idx, lv) => {
     const tl = Array.isArray(my[name]?.talents) ? [...my[name].talents] : [0, 0, 0, 0]
@@ -163,22 +169,22 @@ export default function RosterPage({ ops, lists }) {
               <div className="level-stat" style={{ width: 230, flex: '0 0 230px', padding: '16px 20px', background: 'var(--ink)', color: 'var(--paper)' }}>
                 <small style={{ font: '10px var(--mono)', color: '#aab0a5', letterSpacing: 2 }}>当前等级 / LEVEL</small>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginTop: 2 }}>
-                  <input type="number" min={1} max={90} value={d.lv} disabled={!selOwned}
-                    onChange={e => set(sel, { lv: Math.max(1, Math.min(90, Number(e.target.value) || 1)) })}
+                  <input type="number" min={1} max={90} value={Math.min(d.lv, (d.promo || 0) >= 4 ? 90 : 80)} disabled={!selOwned}
+                    onChange={e => set(sel, { lv: Math.max(1, Math.min((d.promo || 0) >= 4 ? 90 : 80, Number(e.target.value) || 1)) })}
                     style={{ width: 92, fontSize: 52, fontWeight: 900, color: '#ffffff', background: 'transparent', border: 0, borderBottom: '1px dashed #5d625a', padding: 0 }} />
                   <span style={{ fontSize: 22, color: '#8a8f85' }}>/</span>
-                  <span style={{ fontSize: 24, color: '#8a8f85', fontWeight: 700 }}>90</span>
+                  <span style={{ fontSize: 24, color: '#8a8f85', fontWeight: 700 }}>{(d.promo || 0) >= 4 ? 90 : 80}</span>
                 </div>
-                <div style={{ font: '10px var(--mono)', color: '#7c8277', letterSpacing: 1, marginTop: 6 }}>LIMIT 90 · 固定上限</div>
+                <div style={{ font: '10px var(--mono)', color: (d.promo || 0) >= 4 ? '#9db36a' : '#7c8277', letterSpacing: 1, marginTop: 6 }}>{(d.promo || 0) >= 4 ? 'LIMIT 90 · 已解锁' : 'LIMIT 80 · 精英化四解锁 90'}</div>
               </div>
               {/* 潜能 */}
               <div className="pot-stat" style={{ width: 210, flex: '0 0 210px', padding: '16px 20px', borderLeft: '1px solid var(--line)' }}>
                 <small style={{ font: '10px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>潜能 / POTENTIAL</small>
-                <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{d.pot}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 6</span></div>
+                <div style={{ fontSize: 30, fontWeight: 900, margin: '6px 0 8px' }}>{Math.min(d.pot, 5)}<span style={{ fontSize: 15, color: 'var(--sub)' }}> / 5</span></div>
                 <div className="diamonds" style={{ display: 'flex', gap: 6 }}>
-                  {[1, 2, 3, 4, 5, 6].map(n => (
-                    <span key={n} onClick={() => selOwned && set(sel, { pot: n === d.pot ? n - 1 : n })}
-                      style={{ width: 11, height: 11, transform: 'rotate(45deg)', background: d.pot >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <span key={n} onClick={() => selOwned && set(sel, { pot: n === d.pot ? n - 1 : Math.min(n, 5) })}
+                      style={{ width: 11, height: 11, transform: 'rotate(45deg)', background: Math.min(d.pot, 5) >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid var(--ink)', cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                   ))}
                 </div>
               </div>
@@ -271,16 +277,16 @@ export default function RosterPage({ ops, lists }) {
             {/* 下半：精英化长条 + 天赋技能栏 */}
             <div className="elite-track" style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 14, border: '1px solid var(--line)', background: 'var(--paper)', padding: '10px 16px' }}>
               <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>精英化 ELITE</span>
-              <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--ink)' }}>{d.promo}<span style={{ fontSize: 12, color: 'var(--sub)' }}> / 6</span></span>
-              <div style={{ flex: 1, display: 'flex', gap: 4 }}>
-                {[1, 2, 3, 4, 5, 6].map(n => (
-                  <span key={n} onClick={() => selOwned && set(sel, { promo: n === d.promo ? n - 1 : n })}
+              <span style={{ fontSize: 20, fontWeight: 900, color: 'var(--ink)' }}>{Math.min(d.promo, 4)}<span style={{ fontSize: 12, color: 'var(--sub)' }}> / 4</span></span>
+              <div style={{ flex: 1, display: 'flex', gap: 5 }}>
+                {[1, 2, 3, 4].map(n => (
+                  <span key={n} onClick={() => selOwned && set(sel, { promo: n === d.promo ? n - 1 : Math.min(n, 4) })}
                     title={'精英化段 ' + n}
                     className={'elite-seg' + (d.promo >= n ? ' on' : '')}
                     style={{ flex: 1, height: 14, background: d.promo >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (d.promo >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                 ))}
               </div>
-              <small style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>点击段位设定</small>
+              <small style={{ font: '9px var(--mono)', color: (d.promo || 0) >= 4 ? '#7c925b' : 'var(--sub)', whiteSpace: 'nowrap' }}>{(d.promo || 0) >= 4 ? '✓ 已解锁等级上限 90' : '点击段位 · 4 阶解锁 90'}</small>
             </div>
             {/* 天赋技能栏 */}
             <div className="skill-panel" style={{ marginTop: 10, border: '1px solid var(--line)', background: 'var(--paper)' }}>
@@ -291,18 +297,33 @@ export default function RosterPage({ ops, lists }) {
               <div style={{ padding: '0 16px' }}>
                 {[0, 1, 2, 3].map(i => {
                   const lv = (Array.isArray(d.skills) ? d.skills : [0, 0, 0, 0])[i]
+                  const ms = (Array.isArray(d.mastery) ? d.mastery : [0, 0, 0, 0])[i]
                   return (
                     <div key={i} className="skill-row" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '10px 0', borderBottom: i < 3 ? '1px solid var(--line)' : 0 }}>
                       <span className="skill-icon" style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--ink)', color: 'var(--yellow)', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 800, flex: '0 0 44px', border: '2px solid var(--yellow)', boxShadow: '0 0 0 1px var(--ink)' }}>S{i + 1}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
                           <span style={{ fontSize: 15, fontWeight: 700 }}>{SKILL_LABEL[i]}</span>
-                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / MAX 10</span>
+                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>{lv >= 9 ? 'MAX RANK 9' : <>RANK <b style={{ fontSize: 14 }}>{lv}</b> / 9</>}</span>
                         </div>
-                        <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-10）">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                            <span key={n} onClick={() => selOwned && setSkill(sel, i, lv === n ? n - 1 : n)}
-                              style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                        <div className="rank-bar" style={{ display: 'flex', gap: 8 }} title="点击分段设置等级（0-9 · MAX 3/6/9）">
+                          {[[1, 2, 3], [4, 5, 6], [7, 8, 9]].map((grp, gi) => (
+                            <div key={gi} style={{ display: 'flex', flex: grp.length, gap: 2 }}>
+                              {grp.map(n => (
+                                <span key={n} onClick={() => selOwned && setSkill(sel, i, lv === n ? n - 1 : n)}
+                                  style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* 专精三档（用户拍板：三个条） */}
+                      <div className="mastery-col" style={{ flex: '0 0 74px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }} title={'专精 0-3（当前 ' + ms + '）'}>
+                        <small style={{ font: '9px var(--mono)', color: 'var(--sub)', letterSpacing: 1 }}>专精 {ms}/3</small>
+                        <div style={{ display: 'flex', gap: 3 }}>
+                          {[1, 2, 3].map(n => (
+                            <span key={n} onClick={() => selOwned && setMastery(sel, i, ms === n ? n - 1 : n)}
+                              style={{ width: 20, height: 9, background: ms >= n ? 'var(--yellow)' : '#dfe2d9', border: '1px solid ' + (ms >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                           ))}
                         </div>
                       </div>
@@ -326,10 +347,10 @@ export default function RosterPage({ ops, lists }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
                           <span style={{ fontSize: 15, fontWeight: 700 }}>{'基建技能·' + ['一', '二', '三', '四'][i]}</span>
-                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / MAX 10</span>
+                          <span style={{ font: '11px var(--mono)', letterSpacing: 1 }}>RANK <b style={{ fontSize: 14 }}>{lv}</b> / 9</span>
                         </div>
-                        <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-10）">
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                        <div className="rank-bar" style={{ display: 'flex', gap: 2 }} title="点击分段设置等级（0-9）">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
                             <span key={n} onClick={() => selOwned && setTalent(sel, i, lv === n ? n - 1 : n)}
                               style={{ flex: 1, height: 10, background: lv >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
                           ))}
