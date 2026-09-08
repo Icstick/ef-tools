@@ -1,5 +1,5 @@
 import { createRequire } from 'node:module'
-const { chromium } = createRequire('D:/deepseek-harness-alpha5/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright/package.json')('playwright')
+const { chromium } = createRequire('D:/deepseek-harness/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright/package.json')('playwright')
 const fs = await import('node:fs')
 const DIST = 'D:/DSH_workspace/ef-tools/dist'
 const b = await chromium.launch({ channel: 'msedge', headless: true })
