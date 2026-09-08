@@ -457,6 +457,7 @@ export default function RosterPage({ ops, lists }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 16px 8px', borderBottom: '1px solid var(--line)' }}>
                 <span style={{ display: 'inline-block', width: 14, height: 3, background: 'var(--yellow)' }} />
                 <span style={{ font: '11px var(--mono)', letterSpacing: 2, fontWeight: 700 }}>天赋 · 基建 · 好感度 TALENTS</span>
+                <small style={{ font: '10px var(--mono)', color: 'var(--sub)', marginLeft: 'auto', letterSpacing: 0 }} title="游戏内天赋阵列按技能 RANK 段（MAX 3/6/9/专精）解锁节点矩阵；此处档位为网页简化手记，与游戏矩阵无一一对应关系">游戏内按 RANK 段解锁节点 · 此处简化手记</small>
               </div>
               <div style={{ padding: '10px 16px 12px' }}>
                 {(() => {
@@ -470,17 +471,20 @@ export default function RosterPage({ ops, lists }) {
                     { name: '基建二', max: 2, sub: '基建二' },
                     { name: '装备适配', max: 3, sub: '装备适配 · 穿戴品质档 蓝/紫/金（蓝=1 已确认，紫/金语义待补）' },
                   ]
+                  const gates = selOp.talentGate && Array.isArray(selOp.talentGate) ? selOp.talentGate : null // 预留：干员天赋解锁条件（如 [{max:3,unlock:'RANK 6'}]），数据齐后前端自动显示
                   return (
                     <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' }}>
                       {defs.map((row, i) => {
+                        const gate = gates && gates[i]
                         const lv = row.readOnly ? Math.min(d.promo || 0, row.max) : tl[i]
                         const isQual = i === 5 && row.max === 3 // 装备适配：蓝/紫/金 三档品质
                         const QUAL = ['', '#5b8dd9', '#a678c9', '#d9a441']
                         const qName = ['', '蓝', '紫', '金']
                         const on = n => lv >= n
                         return (
-                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }} title={(isQual && lv > 0 ? '装备适配 · 当前穿戴品质档：' + qName[lv] + '（' + lv + '/3）' : row.sub + (row.readOnly ? '' : ' · ' + lv + '/' + row.max + ' 档'))}>
+                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }} title={(isQual && lv > 0 ? '装备适配 · 当前穿戴品质档：' + qName[lv] + '（' + lv + '/3）' : row.sub + (row.readOnly ? '' : ' · ' + lv + '/' + row.max + ' 档') + (gate && gate.unlock ? ' · 解锁：' + gate.unlock : ''))}>
                             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{row.name}</span>
+                            {gate && gate.unlock && <span style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{gate.unlock}</span>}
                             {isQual && lv > 0 && <span style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{qName[lv]}品质</span>}
                             <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
                               {[1, 2, 3, 4].filter(n => n <= row.max).map(n => (
