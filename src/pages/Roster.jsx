@@ -6,7 +6,7 @@ const blank = () => ({
   skills: [0, 0, 0, 0],
   mastery: [0, 0, 0, 0],
   talents: [0, 0, 0, 0, 0],
-  wpn: { name: '', lv: 0, promo: 0, pot: 0, matrix: { name: '', lv: [0, 0, 0] } },
+  wpn: { name: '', lv: 0, promo: 0, pot: 0, matrix: { name: '', lv: [0, 0, 0] }, affix: [0, 0], passive: 0 },
   eq: { armor: { name: '', lv: 0 }, glove: { name: '', lv: 0 }, acc1: { name: '', lv: 0 }, acc2: { name: '', lv: 0 } },
 })
 const EQ_SLOTS = [['armor', '护甲'], ['glove', '护手'], ['acc1', '配件·一'], ['acc2', '配件·二']]
@@ -305,6 +305,40 @@ export default function RosterPage({ ops, lists }) {
                           ))}
                         </div>
                       ) })()}
+                      {/* 武器词条区 UI 骨架：词条一/二 各 9 段 + 被动 1/4 段（名称与真实数据待词条池挖掘；段数自由点记） */}
+                      {(() => {
+                        const aff = Array.isArray((d.wpn && d.wpn.affix)) ? d.wpn.affix.map(v => Math.max(0, Math.min(9, Number(v) || 0))) : [0, 0]
+                        const psv = Math.max(0, Math.min(4, Number((d.wpn && d.wpn.passive) || 0)))
+                        const setAff = (k, v) => { const na = aff.slice(); na[k] = v === na[k] ? v - 1 : Math.min(v, 9); setWpn(sel, { affix: na }) }
+                        const AffBar = ({ label, k }) => (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }} title={'词条段（骨架：段数自记，词条池数据待补）'}>
+                            <small style={{ font: '9px var(--mono)', color: 'var(--sub)', width: 34, flex: '0 0 34px' }}>{label}</small>
+                            <div style={{ display: 'flex', flex: 1, gap: 2 }}>
+                              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+                                <span key={n} onClick={() => selOwned && setAff(k, n)}
+                                  style={{ flex: 1, height: 9, background: aff[k] >= n ? 'var(--yellow)' : '#e2e4dc', border: '1px solid ' + (aff[k] >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block' }} />
+                              ))}
+                            </div>
+                            <small style={{ font: '9px var(--mono)', color: 'var(--sub)', width: 22, textAlign: 'right' }}>{aff[k]}/9</small>
+                          </div>
+                        )
+                        return (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, borderTop: '1px dashed var(--line)', paddingTop: 6, marginTop: 2 }}>
+                            <AffBar label="词条一" k={0} />
+                            <AffBar label="词条二" k={1} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }} title={'被动段（骨架：0-4，段 4 含解锁交叉段示意）'}>
+                              <small style={{ font: '9px var(--mono)', color: 'var(--sub)', width: 34, flex: '0 0 34px' }}>被动</small>
+                              <div style={{ display: 'flex', flex: 1, gap: 2 }}>
+                                {[1, 2, 3, 4].map(n => (
+                                  <span key={n} onClick={() => selOwned && setWpn(sel, { passive: psv === n ? n - 1 : Math.min(n, 4) })}
+                                    style={{ flex: 1, height: 9, background: psv >= n ? 'var(--yellow)' : (n === 4 ? '#e2e4dc' : '#e2e4dc'), border: '1px solid ' + (psv >= n ? 'var(--ink)' : 'var(--line)'), cursor: selOwned ? 'pointer' : 'default', display: 'inline-block', opacity: (n === 4 && psv < 4 && psv < 3) ? .55 : 1 }} />
+                                ))}
+                              </div>
+                              <small style={{ font: '9px var(--mono)', color: 'var(--sub)', width: 22, textAlign: 'right' }}>{psv}/4</small>
+                            </div>
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
                   <div style={{ width: 1, background: 'var(--line)', alignSelf: 'stretch' }} />
@@ -434,19 +468,25 @@ export default function RosterPage({ ops, lists }) {
                     { name: tNames[1] || '天赋二', max: 2, sub: '天赋二' },
                     { name: '基建一', max: 2, sub: '基建一' },
                     { name: '基建二', max: 2, sub: '基建二' },
-                    { name: '装备适配', max: 3, sub: '装备适配 · 穿戴品质档（蓝/紫/金）' },
+                    { name: '装备适配', max: 3, sub: '装备适配 · 穿戴品质档 蓝/紫/金（蓝=1 已确认，紫/金语义待补）' },
                   ]
                   return (
                     <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'center' }}>
                       {defs.map((row, i) => {
                         const lv = row.readOnly ? Math.min(d.promo || 0, row.max) : tl[i]
+                        const isQual = i === 5 && row.max === 3 // 装备适配：蓝/紫/金 三档品质
+                        const QUAL = ['', '#5b8dd9', '#a678c9', '#d9a441']
+                        const qName = ['', '蓝', '紫', '金']
+                        const on = n => lv >= n
                         return (
-                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }} title={row.sub + (row.readOnly ? '' : ' · ' + lv + '/' + row.max + ' 档')}>
+                          <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }} title={(isQual && lv > 0 ? '装备适配 · 当前穿戴品质档：' + qName[lv] + '（' + lv + '/3）' : row.sub + (row.readOnly ? '' : ' · ' + lv + '/' + row.max + ' 档'))}>
                             <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{row.name}</span>
+                            {isQual && lv > 0 && <span style={{ font: '9px var(--mono)', color: 'var(--sub)' }}>{qName[lv]}品质</span>}
                             <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
                               {[1, 2, 3, 4].filter(n => n <= row.max).map(n => (
                                 <span key={n} onClick={() => !row.readOnly && selOwned && setTalent(sel, i, lv === n ? n - 1 : n)}
-                                  style={{ width: 15, height: 15, borderRadius: '50%', background: lv >= n ? 'var(--yellow)' : '#dfe2d9', border: '2px solid ' + (lv >= n ? 'var(--ink)' : 'var(--line)'), cursor: (row.readOnly || !selOwned) ? 'default' : 'pointer', display: 'inline-block' }} />
+                                  title={isQual ? qName[n] + '品质档' : undefined}
+                                  style={{ width: 15, height: 15, borderRadius: '50%', background: on(n) ? (isQual ? QUAL[n] : 'var(--yellow)') : '#dfe2d9', border: '2px solid ' + (on(n) ? (isQual ? QUAL[n] : 'var(--ink)') : 'var(--line)'), cursor: (row.readOnly || !selOwned) ? 'default' : 'pointer', display: 'inline-block' }} />
                               ))}
                             </span>
                           </span>
